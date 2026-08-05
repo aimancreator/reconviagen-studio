@@ -1,0 +1,4 @@
+[submodule "vendor/ReconViaGen"]
+	path = vendor/ReconViaGen
+	url = https://github.com/GAP-LAB-CUHK-SZ/ReconViaGen.git
+	branch = v0.5

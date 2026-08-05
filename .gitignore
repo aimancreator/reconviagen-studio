@@ -1,0 +1,17 @@
+.venv/
+.uv-cache/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.DS_Store
+.env
+.env.*
+!.env.example
+.modal.toml
+outputs/
+manual_models/
+*.safetensors
+*.ckpt
+*.pt
+*.pth

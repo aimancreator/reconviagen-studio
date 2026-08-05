@@ -1,0 +1,222 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="dark" />
+    <meta name="theme-color" content="#10110f" />
+    <title>Orbit MV — Hunyuan3D-2mv</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/static/styles.css" />
+    <link rel="stylesheet" href="/static/hunyuan.css" />
+    <script
+      type="module"
+      src="https://ajax.googleapis.com/ajax/libs/model-viewer/4.1.0/model-viewer.min.js"
+    ></script>
+  </head>
+  <body>
+    <div class="ambient ambient-a"></div>
+    <div class="ambient ambient-b"></div>
+
+    <header class="topbar shell">
+      <a class="brand" href="#" aria-label="Orbit MV home">
+        <span class="brand-mark orbit-mark" aria-hidden="true"><i></i><i></i><i></i></span>
+        <span>ORBIT MV</span>
+      </a>
+      <div class="runtime-badges">
+        <span class="badge"><i class="status-dot"></i><span id="endpointStatus">Checking API</span></span>
+        <span class="badge badge-muted">LOCAL STUDIO</span>
+      </div>
+    </header>
+
+    <main class="shell">
+      <section class="hero hunyuan-hero">
+        <div class="eyebrow"><span>HUNYUAN3D</span><span>2MV</span></div>
+        <h1>Four directions.<br />One <em>coherent asset.</em></h1>
+        <p>
+          Place photos into their matching camera slots. The multiview checkpoint uses
+          orientation-aware conditioning to resolve a textured GLB on your Modal H100.
+        </p>
+      </section>
+
+      <section class="workspace-grid">
+        <div class="left-rail">
+          <article class="panel upload-panel">
+            <div class="panel-heading">
+              <div><span class="step-number">01</span><h2>Set camera views</h2></div>
+              <span class="view-counter"><b id="viewCount">0</b> / 4</span>
+            </div>
+
+            <div class="view-slot-grid" id="viewSlots">
+              <div class="view-slot required" data-view="front">
+                <input type="file" accept="image/png,image/jpeg,image/webp" hidden />
+                <button class="slot-picker" type="button">
+                  <img alt="Front view preview" />
+                  <span class="slot-empty"><b>FRONT</b><small>Required · click or drop</small></span>
+                </button>
+                <button class="slot-remove" type="button" aria-label="Remove front view">×</button>
+                <span class="slot-axis">00°</span>
+              </div>
+              <div class="view-slot" data-view="left">
+                <input type="file" accept="image/png,image/jpeg,image/webp" hidden />
+                <button class="slot-picker" type="button">
+                  <img alt="Left view preview" />
+                  <span class="slot-empty"><b>LEFT</b><small>Optional · click or drop</small></span>
+                </button>
+                <button class="slot-remove" type="button" aria-label="Remove left view">×</button>
+                <span class="slot-axis">90°</span>
+              </div>
+              <div class="view-slot" data-view="back">
+                <input type="file" accept="image/png,image/jpeg,image/webp" hidden />
+                <button class="slot-picker" type="button">
+                  <img alt="Back view preview" />
+                  <span class="slot-empty"><b>BACK</b><small>Optional · click or drop</small></span>
+                </button>
+                <button class="slot-remove" type="button" aria-label="Remove back view">×</button>
+                <span class="slot-axis">180°</span>
+              </div>
+              <div class="view-slot" data-view="right">
+                <input type="file" accept="image/png,image/jpeg,image/webp" hidden />
+                <button class="slot-picker" type="button">
+                  <img alt="Right view preview" />
+                  <span class="slot-empty"><b>RIGHT</b><small>Optional · click or drop</small></span>
+                </button>
+                <button class="slot-remove" type="button" aria-label="Remove right view">×</button>
+                <span class="slot-axis">270°</span>
+              </div>
+            </div>
+
+            <input
+              id="bulkInput"
+              type="file"
+              accept="image/png,image/jpeg,image/webp"
+              multiple
+              hidden
+            />
+            <button id="bulkButton" class="bulk-button" type="button">
+              <svg viewBox="0 0 24 24"><path d="M12 16V4m0 0L7.5 8.5M12 4l4.5 4.5M5 14v4a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-4" /></svg>
+              Fill empty slots with multiple files
+            </button>
+
+            <div class="capture-guide mv-guide">
+              <div class="capture-guide-head">
+                <span>Orientation matters</span><span class="mono">FRONT FIRST</span>
+              </div>
+              <p>
+                Keep the object upright and centered. Match the labels exactly; use similar
+                lighting, scale, and camera height in every photo.
+              </p>
+            </div>
+          </article>
+
+          <article class="panel settings-panel">
+            <button id="settingsToggle" class="panel-heading settings-toggle" type="button" aria-expanded="true">
+              <span class="settings-title"><span class="step-number">02</span><span>Build settings</span></span>
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6" /></svg>
+            </button>
+            <div id="settingsBody" class="settings-body">
+              <div class="field full-field">
+                <label>Shape detail</label>
+                <div class="segmented two-up" id="qualityControl">
+                  <button type="button" data-value="256"><span>Balanced</span><small>256 grid</small></button>
+                  <button type="button" class="active" data-value="380"><span>High</span><small>380 grid</small></button>
+                </div>
+              </div>
+              <div class="field">
+                <label for="steps">Shape sampling</label>
+                <select id="steps">
+                  <option value="20">20 steps · faster</option>
+                  <option value="30" selected>30 steps · balanced</option>
+                  <option value="50">50 steps · maximum</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="textureMode">Output finish</label>
+                <select id="textureMode">
+                  <option value="textured" selected>Multiview textured GLB</option>
+                  <option value="shape">Shape only · faster</option>
+                </select>
+              </div>
+              <div class="field full-field seed-field">
+                <label for="seed">Seed</label>
+                <input id="seed" type="number" min="0" max="2147483647" value="0" />
+              </div>
+            </div>
+          </article>
+
+          <button id="generateButton" class="generate-button" type="button" disabled>
+            <span>Generate multiview model</span>
+            <span class="button-meta"><b>H100</b><i></i><b>GLB</b></span>
+            <svg viewBox="0 0 24 24"><path d="M5 12h14m-5-5 5 5-5 5" /></svg>
+          </button>
+          <p class="billing-note">Modal scales to zero after the job. GPU time is billed by your Modal account.</p>
+        </div>
+
+        <article class="panel preview-panel">
+          <div class="preview-toolbar">
+            <div><span class="step-number">03</span><h2>Model preview</h2></div>
+            <div class="preview-actions">
+              <button id="resetCamera" class="icon-button" type="button" disabled title="Reset camera">
+                <svg viewBox="0 0 24 24"><path d="M4 12a8 8 0 1 0 2.34-5.66L4 8.68M4 4v4.68h4.68" /></svg>
+              </button>
+              <a id="downloadButton" class="download-button disabled" download="hunyuan3d-2mv.glb">
+                <svg viewBox="0 0 24 24"><path d="M12 3v12m0 0 4-4m-4 4-4-4M5 20h14" /></svg>
+                Download GLB
+              </a>
+            </div>
+          </div>
+
+          <div id="previewStage" class="preview-stage">
+            <div class="stage-grid"></div>
+            <div id="emptyState" class="empty-state">
+              <div class="empty-orbit"><span></span><span></span><span></span>
+                <svg viewBox="0 0 64 64"><path d="m32 9 19 11v23L32 54 13 43V20L32 9Zm0 0v22m19-11L32 31 13 20m19 11v23" /></svg>
+              </div>
+              <h3>Your asset will appear here</h3>
+              <p>Add the front view and any matching side/back views, then start the H100 build.</p>
+            </div>
+
+            <div id="processingState" class="processing-state" hidden>
+              <div class="scanner"><span class="scan-orbit orbit-one"></span><span class="scan-orbit orbit-two"></span><span class="scan-core"></span><span class="scan-line"></span></div>
+              <span id="processingKicker" class="mono">WAKING H100</span>
+              <h3 id="processingTitle">Preparing the multiview pipeline</h3>
+              <p id="processingCopy">The first request may include a cold start while model weights load.</p>
+              <div class="progress-track"><i></i></div>
+              <span id="elapsedTime" class="mono">00:00</span>
+            </div>
+
+            <model-viewer id="modelViewer" camera-controls auto-rotate shadow-intensity="1" shadow-softness="0.8" environment-image="neutral" exposure="1" interaction-prompt="none" style="display: none"></model-viewer>
+
+            <div id="errorState" class="error-state" hidden>
+              <span>BUILD INTERRUPTED</span><h3>Generation could not finish</h3>
+              <p id="errorMessage"></p><button id="tryAgainButton" type="button">Return to views</button>
+            </div>
+          </div>
+
+          <div class="preview-footer">
+            <span><i></i> DRAG TO ORBIT</span><span>SCROLL TO ZOOM</span>
+            <span id="generationMeta">AWAITING FRONT VIEW</span>
+          </div>
+        </article>
+      </section>
+
+      <section class="pipeline-note">
+        <div><span>01</span><p><b>Orient</b>Fixed view tags preserve camera direction.</p></div><i></i>
+        <div><span>02</span><p><b>Shape</b>Hunyuan3D-2mv resolves common geometry.</p></div><i></i>
+        <div><span>03</span><p><b>Paint</b>Turbo multiview diffusion bakes the texture.</p></div>
+      </section>
+    </main>
+
+    <footer class="shell license-footer">
+      <span>SELF-HOSTED HUNYUAN3D-2MV · TENCENT IS NOT AFFILIATED WITH OR ENDORSING THIS SERVICE</span>
+      <a href="https://huggingface.co/tencent/Hunyuan3D-2mv/blob/main/LICENSE" target="_blank" rel="noreferrer">COMMUNITY LICENSE ↗</a>
+    </footer>
+
+    <script src="/static/hunyuan.js" defer></script>
+  </body>
+</html>

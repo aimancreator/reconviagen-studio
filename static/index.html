@@ -1,0 +1,251 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="dark" />
+    <meta name="theme-color" content="#10110f" />
+    <title>Reform — Multi-view to 3D</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/static/styles.css" />
+    <script
+      type="module"
+      src="https://ajax.googleapis.com/ajax/libs/model-viewer/4.1.0/model-viewer.min.js"
+    ></script>
+  </head>
+  <body>
+    <div class="ambient ambient-a"></div>
+    <div class="ambient ambient-b"></div>
+
+    <header class="topbar shell">
+      <a class="brand" href="#" aria-label="Reform home">
+        <span class="brand-mark" aria-hidden="true">
+          <i></i><i></i><i></i>
+        </span>
+        <span>REFORM</span>
+      </a>
+      <div class="runtime-badges">
+        <span class="badge"><i class="status-dot"></i><span id="endpointStatus" aria-live="polite">Checking API</span></span>
+        <span class="badge badge-muted">LOCAL STUDIO</span>
+      </div>
+    </header>
+
+    <main class="shell">
+      <section class="hero">
+        <div class="eyebrow"><span>RECONVIAGEN</span><span>V0.5</span></div>
+        <h1>Turn every angle<br />into <em>one object.</em></h1>
+        <p>
+          Add up to eight views of the same subject. Reform fuses their geometry and
+          appearance into a production-ready, PBR-textured GLB.
+        </p>
+      </section>
+
+      <section class="workspace-grid">
+        <div class="left-rail">
+          <article class="panel upload-panel">
+            <div class="panel-heading">
+              <div>
+                <span class="step-number">01</span>
+                <h2>Add your views</h2>
+              </div>
+              <span class="view-counter"><b id="viewCount">0</b> / 8</span>
+            </div>
+
+            <input
+              id="fileInput"
+              type="file"
+              accept="image/png,image/jpeg,image/webp"
+              multiple
+              hidden
+            />
+            <button id="dropzone" class="dropzone" type="button">
+              <span class="drop-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24"><path d="M12 16V4m0 0L7.5 8.5M12 4l4.5 4.5M5 14v4a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-4" /></svg>
+              </span>
+              <span class="drop-title">Drop object photos here</span>
+              <span class="drop-copy">or click to browse · PNG, JPG, WEBP · 15 MB each</span>
+            </button>
+            <p id="uploadNotice" class="upload-notice" role="status" hidden></p>
+
+            <div id="viewList" class="view-list" aria-live="polite"></div>
+
+            <div class="capture-guide">
+              <div class="capture-guide-head">
+                <span>Capture guide</span>
+                <span class="mono">2–8 VIEWS WORK BEST</span>
+              </div>
+              <div class="angle-strip" aria-hidden="true">
+                <div><span class="angle-object angle-front"></span><small>FRONT</small></div>
+                <i></i>
+                <div><span class="angle-object angle-quarter"></span><small>3/4</small></div>
+                <i></i>
+                <div><span class="angle-object angle-side"></span><small>SIDE</small></div>
+                <i></i>
+                <div><span class="angle-object angle-back"></span><small>BACK</small></div>
+              </div>
+              <p>Keep lighting, distance, and object scale consistent. Use a clean background and cover the full orbit.</p>
+            </div>
+          </article>
+
+          <article class="panel settings-panel">
+            <button id="settingsToggle" class="panel-heading settings-toggle" type="button" aria-expanded="true">
+              <span class="settings-title"><span class="step-number">02</span><span>Build settings</span></span>
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6" /></svg>
+            </button>
+            <div id="settingsBody" class="settings-body">
+              <div class="field full-field">
+                <label>Quality</label>
+                <div class="segmented four-up" id="qualityControl">
+                  <button type="button" data-value="512"><span>Draft</span><small>512³</small></button>
+                  <button type="button" data-value="1024"><span>Fast</span><small>1024³</small></button>
+                  <button type="button" class="active" data-value="1024_cascade"><span>Balanced</span><small>1024³ cascade</small></button>
+                  <button type="button" data-value="1536_cascade"><span>Ultra</span><small>1536³</small></button>
+                </div>
+              </div>
+              <div class="field">
+                <label for="strategy">View fusion</label>
+                <select id="strategy">
+                  <option value="adaptive_guidance_weight">Adaptive guidance · recommended</option>
+                  <option value="weighted_average">Weighted average</option>
+                  <option value="average_right">Equal average</option>
+                  <option value="average">Mean fusion</option>
+                  <option value="sequential">Sequential · faster</option>
+                  <option value="fixed_guidance_rescale">Fixed guidance rescale</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="textureSize">PBR texture</label>
+                <select id="textureSize">
+                  <option value="1024">1K</option>
+                  <option value="2048" selected>2K · recommended</option>
+                  <option value="4096">4K</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="faceTarget">Face target</label>
+                <select id="faceTarget">
+                  <option value="250000">250K · lighter</option>
+                  <option value="500000" selected>500K · balanced</option>
+                  <option value="1000000">1M · maximum</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="seed">Seed</label>
+                <input id="seed" type="number" min="0" max="2147483647" value="0" />
+              </div>
+              <details class="advanced full-field">
+                <summary>Advanced structure settings</summary>
+                <div class="advanced-grid">
+                  <div class="field full-field">
+                    <label for="ssSource">Structure source</label>
+                    <select id="ssSource">
+                      <option value="mesh" selected>ReconViaGen mesh · upstream default</option>
+                      <option value="direct">ReconViaGen direct · faster</option>
+                      <option value="mvtrellis2">TRELLIS.2 sparse structure</option>
+                    </select>
+                  </div>
+                </div>
+              </details>
+            </div>
+          </article>
+
+          <button id="generateButton" class="generate-button" type="button" disabled>
+            <span>Generate 3D model</span>
+            <span class="button-meta"><b>H100</b><i></i><b>GLB + PBR</b></span>
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14m-5-5 5 5-5 5" /></svg>
+          </button>
+          <p class="billing-note">Modal scales to zero after the job. GPU time is billed by your Modal account.</p>
+        </div>
+
+        <article class="panel preview-panel">
+          <div class="preview-toolbar">
+            <div>
+              <span class="step-number">03</span>
+              <h2>Model preview</h2>
+            </div>
+            <div class="preview-actions">
+              <button id="resetCamera" class="icon-button" type="button" disabled title="Reset camera">
+                <svg viewBox="0 0 24 24"><path d="M4 12a8 8 0 1 0 2.34-5.66L4 8.68M4 4v4.68h4.68" /></svg>
+              </button>
+              <a id="downloadButton" class="download-button disabled" download="reconviagen-model.glb">
+                <svg viewBox="0 0 24 24"><path d="M12 3v12m0 0 4-4m-4 4-4-4M5 20h14" /></svg>
+                Download GLB
+              </a>
+            </div>
+          </div>
+
+          <div id="previewStage" class="preview-stage">
+            <div class="stage-grid"></div>
+            <div id="emptyState" class="empty-state">
+              <div class="empty-orbit">
+                <span></span><span></span><span></span>
+                <svg viewBox="0 0 64 64" aria-hidden="true"><path d="m32 9 19 11v23L32 54 13 43V20L32 9Zm0 0v22m19-11L32 31 13 20m19 11v23" /></svg>
+              </div>
+              <h3>Your object will appear here</h3>
+              <p>Add multiple views, choose your settings, then start the H100 build.</p>
+            </div>
+
+            <div id="processingState" class="processing-state" hidden>
+              <div class="scanner">
+                <span class="scan-orbit orbit-one"></span>
+                <span class="scan-orbit orbit-two"></span>
+                <span class="scan-core"></span>
+                <span class="scan-line"></span>
+              </div>
+              <span id="processingKicker" class="mono">WAKING H100</span>
+              <h3 id="processingTitle">Preparing the reconstruction</h3>
+              <p id="processingCopy">The first request may include a cold start while model weights load.</p>
+              <div class="progress-track"><i></i></div>
+              <span id="elapsedTime" class="mono">00:00</span>
+            </div>
+
+            <model-viewer
+              id="modelViewer"
+              camera-controls
+              auto-rotate
+              shadow-intensity="1"
+              shadow-softness="0.8"
+              environment-image="neutral"
+              exposure="1"
+              interaction-prompt="none"
+              style="display: none"
+            ></model-viewer>
+
+            <div id="errorState" class="error-state" hidden>
+              <span>BUILD INTERRUPTED</span>
+              <h3>Generation could not finish</h3>
+              <p id="errorMessage"></p>
+              <button id="tryAgainButton" type="button">Return to inputs</button>
+            </div>
+          </div>
+
+          <div class="preview-footer">
+            <span><i></i> DRAG TO ORBIT</span>
+            <span>SCROLL TO ZOOM</span>
+            <span id="generationMeta" aria-live="polite">AWAITING INPUT</span>
+          </div>
+        </article>
+      </section>
+
+      <section class="pipeline-note">
+        <div><span>01</span><p><b>Align</b>VGGT finds shared multi-view structure.</p></div>
+        <i></i>
+        <div><span>02</span><p><b>Shape</b>TRELLIS.2 creates high-resolution geometry.</p></div>
+        <i></i>
+        <div><span>03</span><p><b>Finish</b>PBR texture and GLB are decoded together.</p></div>
+      </section>
+    </main>
+
+    <footer class="shell">
+      <span>RECONVIAGEN V0.5 · OFFICIAL OPEN-SOURCE PIPELINE</span>
+      <a href="https://github.com/GAP-LAB-CUHK-SZ/ReconViaGen/tree/v0.5" target="_blank" rel="noreferrer">SOURCE ↗</a>
+    </footer>
+
+    <script src="/static/app.js" defer></script>
+  </body>
+</html>
